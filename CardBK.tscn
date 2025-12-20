@@ -1,0 +1,104 @@
+[gd_scene load_steps=9 format=3 uid="uid://8aonagtd4atj"]
+
+[ext_resource type="Script" uid="uid://ccestf5mo0wm7" path="res://Scripts/Card.cs" id="1_nki8b"]
+[ext_resource type="Shader" uid="uid://blsxxe4g40tf7" path="res://shader/Card.gdshader" id="2_271n3"]
+[ext_resource type="Texture2D" uid="uid://dcfnscyx0biuv" path="res://CardFace/base.png" id="3_vix2k"]
+[ext_resource type="Texture2D" uid="uid://drajbaad5a5hs" path="res://CardFace/clubs.png" id="4_rxa3w"]
+[ext_resource type="Texture2D" uid="uid://b5xi8k6q427r4" path="res://CardFace/back.png" id="5_tq8ak"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wi8ie"]
+resource_local_to_scene = true
+shader = ExtResource("2_271n3")
+shader_parameter/fov = 90.0
+shader_parameter/cull_back = true
+shader_parameter/y_rot = 0.0
+shader_parameter/x_rot = 0.0
+shader_parameter/inset = 0.0
+
+[sub_resource type="LabelSettings" id="LabelSettings_3ujke"]
+font_size = 40
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_8ekg7"]
+
+[node name="Card" type="Button" node_paths=PackedStringArray("CardFace", "CardComp", "RankLable", "SuitImage", "CardBack")]
+self_modulate = Color(0, 0, 0, 0)
+z_index = 1
+offset_right = 187.0
+offset_bottom = 263.0
+script = ExtResource("1_nki8b")
+CardFace = NodePath("CardComp/SubViewport/CardVisual")
+CardComp = NodePath("CardComp")
+RankLable = NodePath("CardComp/SubViewport/CardVisual/Rank")
+SuitImage = NodePath("CardComp/SubViewport/CardVisual/Suit")
+CardBack = NodePath("CardComp/SubViewport/CardVisual/CardBack")
+
+[node name="CardComp" type="SubViewportContainer" parent="."]
+z_index = 1
+material = SubResource("ShaderMaterial_wi8ie")
+layout_mode = 0
+offset_right = 192.0
+offset_bottom = 270.0
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="CardComp"]
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(192, 270)
+render_target_update_mode = 4
+
+[node name="CardVisual" type="TextureRect" parent="CardComp/SubViewport"]
+offset_left = -3.0
+offset_top = -5.0
+offset_right = 190.0
+offset_bottom = 267.0
+texture = ExtResource("3_vix2k")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Rank" type="Label" parent="CardComp/SubViewport/CardVisual"]
+z_index = 1
+layout_mode = 0
+offset_left = 13.0
+offset_top = 11.0
+offset_right = 70.0
+offset_bottom = 66.0
+text = "A"
+label_settings = SubResource("LabelSettings_3ujke")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Suit" type="TextureRect" parent="CardComp/SubViewport/CardVisual"]
+z_index = 1
+layout_mode = 0
+offset_left = 41.000004
+offset_top = 83.00001
+offset_right = 153.0
+offset_bottom = 195.0
+rotation = -0.003504682
+texture = ExtResource("4_rxa3w")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CardBack" type="TextureRect" parent="CardComp/SubViewport/CardVisual"]
+visible = false
+layout_mode = 1
+offset_left = -6.0
+offset_top = -9.0
+offset_right = 209.0
+offset_bottom = 276.0
+texture = ExtResource("5_tq8ak")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="Shadow" type="TextureRect" parent="."]
+modulate = Color(0, 0, 0, 0.29411766)
+material = SubResource("ShaderMaterial_8ekg7")
+layout_mode = 0
+offset_left = 5.0
+offset_top = 7.0
+offset_right = 201.0
+offset_bottom = 281.0
+mouse_filter = 2
+texture = ExtResource("3_vix2k")
+expand_mode = 1
+stretch_mode = 4

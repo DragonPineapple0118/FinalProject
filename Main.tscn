@@ -1,0 +1,217 @@
+[gd_scene load_steps=9 format=3 uid="uid://da03m43gv16km"]
+
+[ext_resource type="Script" uid="uid://dkfxw22fq7i62" path="res://Scripts/Main.cs" id="1_glv2v"]
+[ext_resource type="PackedScene" uid="uid://esdhdyv14tvv" path="res://Card.tscn" id="2_uu6xs"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_rxg2q"]
+font_size = 30
+font_color = Color(0, 0, 0, 1)
+outline_size = 4
+
+[sub_resource type="LabelSettings" id="LabelSettings_glv2v"]
+font_size = 25
+font_color = Color(0, 0, 0, 1)
+outline_size = 4
+
+[sub_resource type="LabelSettings" id="LabelSettings_uu6xs"]
+font_size = 25
+font_color = Color(0, 0, 0, 1)
+outline_size = 4
+
+[sub_resource type="LabelSettings" id="LabelSettings_fos0i"]
+font_size = 25
+font_color = Color(0, 0, 0, 1)
+outline_size = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_r0du0"]
+font_size = 30
+font_color = Color(0, 0, 0, 1)
+outline_size = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_cm0pq"]
+font_size = 30
+font_color = Color(0, 0, 0, 1)
+outline_size = 15
+shadow_size = 26
+
+[node name="Main" type="Control" node_paths=PackedStringArray("HandContainer", "JokerContainer", "ScoreLabel", "ChipsLabel", "MultLabel", "StageLabel", "HandLabel", "DiscardLabel", "MoneyLabel", "TypeLabel", "PlayHandButton", "DiscardButton", "ShopPanel", "ShopItemContainer", "CloseShopButton", "SortToggleButton")]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -2.0
+offset_right = -2.0
+script = ExtResource("1_glv2v")
+DrawCardCount = 8
+CardObject = ExtResource("2_uu6xs")
+HandContainer = NodePath("HandContainer")
+JokerContainer = NodePath("MagicCardContainer")
+ScoreLabel = NodePath("Score")
+ChipsLabel = NodePath("chips")
+MultLabel = NodePath("multiple")
+StageLabel = NodePath("Stage")
+HandLabel = NodePath("HandNum")
+DiscardLabel = NodePath("DiscardNum")
+MoneyLabel = NodePath("Money")
+TypeLabel = NodePath("TypeLabel")
+PlayHandButton = NodePath("HandCard")
+DiscardButton = NodePath("DiscardCard")
+ShopPanel = NodePath("ShopUI/ShopPanel")
+ShopItemContainer = NodePath("ShopUI/ItemContainer")
+CloseShopButton = NodePath("ShopUI/CloseShop")
+SortToggleButton = NodePath("SwitchSort")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1155.0
+offset_bottom = 650.0
+color = Color(0.17207247, 0.34228396, 0.17219663, 1)
+
+[node name="Score" type="Label" parent="."]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 26.0
+offset_right = 142.0
+offset_bottom = 68.0
+text = "Score:"
+label_settings = SubResource("LabelSettings_rxg2q")
+
+[node name="chips" type="Label" parent="."]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 72.0
+offset_right = 142.0
+offset_bottom = 107.0
+text = "Chips:"
+label_settings = SubResource("LabelSettings_glv2v")
+
+[node name="multiple" type="Label" parent="."]
+layout_mode = 0
+offset_left = 35.0
+offset_top = 111.0
+offset_right = 142.0
+offset_bottom = 146.0
+text = "Multiple:"
+label_settings = SubResource("LabelSettings_uu6xs")
+
+[node name="TypeLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 150.0
+offset_right = 101.0
+offset_bottom = 185.0
+text = "Type:"
+label_settings = SubResource("LabelSettings_fos0i")
+
+[node name="Stage" type="Label" parent="."]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 26.0
+offset_right = 545.0
+offset_bottom = 68.0
+text = "Stage:"
+label_settings = SubResource("LabelSettings_rxg2q")
+
+[node name="HandNum" type="Label" parent="."]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 72.0
+offset_right = 545.0
+offset_bottom = 107.0
+text = "Hands:"
+label_settings = SubResource("LabelSettings_glv2v")
+
+[node name="DiscardNum" type="Label" parent="."]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 111.0
+offset_right = 545.0
+offset_bottom = 146.0
+text = "Discards:"
+label_settings = SubResource("LabelSettings_uu6xs")
+
+[node name="Money" type="Label" parent="."]
+layout_mode = 0
+offset_left = 435.0
+offset_top = 150.0
+offset_right = 545.0
+offset_bottom = 185.0
+text = "Money:"
+label_settings = SubResource("LabelSettings_uu6xs")
+
+[node name="MagicCardLable" type="Label" parent="."]
+layout_mode = 0
+offset_left = 786.0
+offset_top = 175.0
+offset_right = 949.0
+offset_bottom = 217.0
+text = "MagicCard"
+label_settings = SubResource("LabelSettings_r0du0")
+
+[node name="MagicCardContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 613.0
+offset_top = 12.0
+offset_right = 1105.0
+offset_bottom = 176.0
+
+[node name="HandContainer" type="HBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 230.0
+offset_top = 420.0
+offset_right = 1033.0
+offset_bottom = 583.0
+theme_override_constants/separation = 80
+
+[node name="HandCard" type="Button" parent="."]
+layout_mode = 0
+offset_left = 511.0
+offset_top = 325.0
+offset_right = 617.0
+offset_bottom = 361.0
+size_flags_horizontal = 4
+theme_override_font_sizes/font_size = 20
+text = "Play Hand"
+
+[node name="DiscardCard" type="Button" parent="."]
+layout_mode = 0
+offset_left = 626.0
+offset_top = 325.0
+offset_right = 730.0
+offset_bottom = 361.0
+theme_override_font_sizes/font_size = 20
+text = "Discard"
+
+[node name="SwitchSort" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1042.0
+offset_top = 424.0
+offset_right = 1133.0
+offset_bottom = 460.0
+text = "SortSwitch"
+
+[node name="ShopUI" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 0
+offset_left = 270.0
+offset_top = 139.0
+offset_right = 895.0
+offset_bottom = 500.0
+
+[node name="ShopPanel" type="Panel" parent="ShopUI"]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="ShopUI"]
+layout_mode = 2
+color = Color(0.015037105, 0.44901425, 0.5326547, 1)
+
+[node name="ShopText" type="Label" parent="ShopUI"]
+layout_mode = 2
+text = "Shop"
+label_settings = SubResource("LabelSettings_cm0pq")
+horizontal_alignment = 1
+
+[node name="ItemContainer" type="HBoxContainer" parent="ShopUI"]
+layout_mode = 2
+
+[node name="CloseShop" type="Button" parent="ShopUI"]
+layout_mode = 2
+text = "Close"
