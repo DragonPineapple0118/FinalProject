@@ -31,6 +31,7 @@ public partial class Main : Control
     [Export] public Label GameOverScoreLabel;
     [Export] public Button RetryButton;
     [Export] public Label BonusLabel;
+
     private List<(Suit,Rank)> _deck = new List<(Suit,Rank)>();
     private List<MagicCard> _magicCard = new List<MagicCard>();
     private Dictionary<HandType, int> _handBonuses = new Dictionary<HandType,int>();
@@ -45,10 +46,10 @@ public partial class Main : Control
     private int _multiplier = 0;
     public int _selectCount = 0;
     private bool _shopOpen = false;
-    private bool _sortByRank = true;    
-		
-	// Called when the node enters the scene tree for the first time.
-	public override void _Ready()
+    private bool _sortByRank = true;
+    
+    // Called when the node enters the scene tree for the first time.
+    public override void _Ready()
     {
         GD.Print("Ready");
         PlayHandButton.Pressed += PlayHandPressed;
@@ -60,11 +61,11 @@ public partial class Main : Control
         NewStage();
     }
 
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+    // Called every frame. 'delta' is the elapsed time since the previous frame.
+    public override void _Process(double delta)
     {
-
     }
+    
     private void Initialize()
     {
         GD.Print("Initializing");
@@ -78,6 +79,7 @@ public partial class Main : Control
         }
         GD.Print($"Deck initialized with {_deck.Count} cards");
     }
+    
     private void NewStage()
     {
         _currentScore = 0;
@@ -91,8 +93,8 @@ public partial class Main : Control
         DrawCard(DrawCardCount);
         UpdateUI();
         ShopPanel.Visible = false;
-        
     }
+    
     private void CalculateScore(List<Card> cards,HandType handType)
     {
         _baseChips = handType switch
@@ -107,11 +109,20 @@ public partial class Main : Control
             HandType.StraightFlush => 12,
             _ => 0
         };
+        
+        // Apply magic card hand bonuses
+        if (_handBonuses.ContainsKey(handType))
+        {
+            _baseChips += _handBonuses[handType];
+            GD.Print($"Applied bonus to {handType}: +{_handBonuses[handType]} chips");
+        }
+        
         List<Card> ContributingCards = GetContributingCards(cards ,handType);
         foreach (var card in ContributingCards)
         {
             _baseChips += GetCardChips(card._rank);
         }
+        
         _multiplier = handType switch
         {
             HandType.Single => 1,
@@ -125,6 +136,7 @@ public partial class Main : Control
             _ => 0
         };
     }
+    
     private List<Card> GetContributingCards(List<Card> cards, HandType handtype)
     {
         var contributingCards = new List<Card>();
@@ -176,6 +188,7 @@ public partial class Main : Control
     {
         return cards.GroupBy(c => c._rank).Where(g => g.Count() == 4).Select(g => g.Key).FirstOrDefault();
     }
+    
     public List<Card> GetSelectedCards()
     {
         List<Card> selectedCard = new List<Card>();
@@ -186,6 +199,7 @@ public partial class Main : Control
         }
         return selectedCard;
     }
+    
     private int GetCardChips(Rank rank)
     {
         return rank switch
@@ -206,6 +220,7 @@ public partial class Main : Control
             _ => 0
         };
     }
+    
     private void PlayHandPressed()
     {
         List<Card> selectedCards = GetSelectedCards();
@@ -225,15 +240,19 @@ public partial class Main : Control
         int totalScore = (int)(_baseChips * _multiplier * _stageEffect);
         _currentScore += totalScore;
         _handsLeft--;
-        if(_stageEffect==1)GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult = {totalScore} points");
-        else GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult x {_stageEffect} Stage Effect = {totalScore} points");
-       int DecreasedCardCount = selectedCards.Count();
+        if(_stageEffect==1)
+            GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult = {totalScore} points");
+        else 
+            GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult x {_stageEffect} Stage Effect = {totalScore} points");
+        
+        int DecreasedCardCount = selectedCards.Count();
         foreach(var card in selectedCards)
             card.QueueFree();
         DrawCard(DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount));
         UpdateUI();
         IfWin();
     }
+    
     private void IfWin()
     {
         if(_currentScore >= _targetScore)
@@ -249,6 +268,7 @@ public partial class Main : Control
             GameOver();
         }
     }
+    
     private void DiscardPressed()
     {
         if (_discardLeft <= 0)
@@ -265,15 +285,18 @@ public partial class Main : Control
         DrawCard(DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount));
         UpdateUI();
     }
+    
     private void OpenShop()
     {
         ShopPanel.Visible = true;
         GenerateShopItems();
-        
     }
+    
     private void GenerateShopItems()
     {
-        foreach(Node child in ShopItemContainer.GetChildren())child.QueueFree();
+        foreach(Node child in ShopItemContainer.GetChildren())
+            child.QueueFree();
+            
         var Cards = new List<MagicCard>
         {
             new HandScoreUpgrade(HandType.Single,2),
@@ -289,13 +312,15 @@ public partial class Main : Control
             new SuitChange(Suit.Clubs),
             new SuitChange(Suit.Spades),
         };
+        
         var random = new Random();
         foreach(var magicCard in Cards.OrderBy(x => random.Next()).Take(2).ToList())
         {
             CreateShopItem(magicCard);
         }
     }
-        private void CreateShopItem(MagicCard magicCard)
+    
+    private void CreateShopItem(MagicCard magicCard)
     {
         var itemContainer = new VBoxContainer();
         itemContainer.CustomMinimumSize = new Vector2(280, 120);
@@ -327,24 +352,30 @@ public partial class Main : Control
         buyButton.Pressed += () => BuyMagicCard(magicCard, itemContainer);
         itemContainer.AddChild(buyButton);
     }
+    
     private void BuyMagicCard(MagicCard magicCard, Node itemContainer)
     {
         if(_money >= 3)
         {
             _money -= 3;
             _magicCard.Add(magicCard);
+            GD.Print($"Buying magic card: {magicCard.Name}");
             magicCard.ApplyEffect(this);
             itemContainer.QueueFree();
             UpdateUI();
+            UpdateMagicCardDisplay();
             GD.Print($"Bought {magicCard.Name}: {magicCard.Description}");
         }
-        else GD.Print("No Enough Money");
+        else 
+            GD.Print("No Enough Money");
     }
+    
     private void CloseShopPressed()
     {
         ShopPanel.Visible = false;
         NewStage();
     }
+    
     private void GameOver()
     {
         GameOverPanel.Visible = true;
@@ -353,13 +384,14 @@ public partial class Main : Control
         DiscardButton.Disabled = true;
         SortToggleButton.Disabled = true;
     }
+    
     private void Retry()
     {
-        _currentStage = 0;
+        _currentStage = 1;
         _currentScore = 0;
-        _handsLeft = 4;
+        _handsLeft = 5;
         _discardLeft = 3;
-        _money =4;
+        _money = 4;
         _magicCard.Clear();
         _handBonuses.Clear();
         _SuitChanges.Clear();
@@ -369,19 +401,23 @@ public partial class Main : Control
         SortToggleButton.Disabled = false;
         NewStage();
     }
+    
     private void SortSwitch()
     {
         _sortByRank=!_sortByRank;
         SortToggleButton.Text = _sortByRank ? "Sort : Rank" : "Sort : Suit";
         Sort();
     }
+    
     public void AddHandBonus(HandType handType, int bonus)
     {
         if(_handBonuses.ContainsKey(handType))
             _handBonuses[handType] += bonus;
         else
             _handBonuses[handType] = bonus;
+        GD.Print($"Added hand bonus: {handType} +{bonus} chips (total: {_handBonuses[handType]})");
     }
+    
     public void EnableSuitChange(Suit suit)
     {
         _SuitChanges.Add(suit);
@@ -391,9 +427,10 @@ public partial class Main : Control
             {
                 card.EnableSuitChange(suit);
             }
-            GD.Print($"Suit Change to {suit} is enabled");
         }
+        GD.Print($"Suit Change to {suit} is enabled");
     }
+    
     private void ShuffleDeck()
     {
         Random random = new Random();
@@ -407,12 +444,14 @@ public partial class Main : Control
             _deck[n] = value;
         }
     }
+    
     private void ClearHand()
     {
         foreach (Node child in HandContainer.GetChildren())
             child.QueueFree();
         _selectCount = 0;
     }
+    
     private void DrawCard(int n)
     {
         for(int i = 0; i < n; i++)
@@ -422,16 +461,25 @@ public partial class Main : Control
             Card NewCard = CardObject.Instantiate<Card>();
             HandContainer.AddChild(NewCard);
             NewCard.SetData(data.Item1,data.Item2);
+            
+            // Apply suit changes to new cards if available
+            foreach (var targetSuit in _SuitChanges)
+            {
+                if (NewCard._suit != targetSuit)
+                {
+                    NewCard.EnableSuitChange(targetSuit);
+                }
+            }
+            
             NewCard.OnSelectedChanged += ()=>
             {
                 if(GetSelectedCards().Count > 5)
                     NewCard.SetSelected();
                 UpdateUI();
             };
-
-
         }
     }
+    
     private void Sort()
     {
         var cards =new List<Card>();
@@ -467,11 +515,13 @@ public partial class Main : Control
         List<Card> selectedCards = GetSelectedCards();
         HandType handType = HandEvaluator.Evaluate(selectedCards);
         CalculateScore(selectedCards,handType);
+        
         string handBonusText = "";
         if (_handBonuses.ContainsKey(handType) && _handBonuses[handType] > 0)
         {
             handBonusText = $" (+{_handBonuses[handType]} bonus)";
         }
+        
         TypeLabel.Text = $"{handType}";
         ScoreLabel.Text = $"{_currentScore}/{_targetScore}";
         ChipsLabel.Text = $"{_baseChips}";
@@ -482,12 +532,15 @@ public partial class Main : Control
         BonusLabel.Text = $"{handBonusText}";
         MoneyLabel.Text = $"{_money}";
     }
+    
     private void UpdateMagicCardDisplay()
     {
         // Clear existing magic card display
         foreach (Node child in JokerContainer.GetChildren())
             child.QueueFree();
             
+        GD.Print($"Updating magic card display. Total cards: {_magicCard.Count}");
+        
         // Display owned magic cards
         foreach (var magicCard in _magicCard)
         {
@@ -496,7 +549,7 @@ public partial class Main : Control
             cardLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             cardLabel.CustomMinimumSize = new Vector2(120, 80);
             JokerContainer.AddChild(cardLabel);
+            GD.Print($"Displaying magic card: {magicCard.Name}");
         }
     }
-    
 }
