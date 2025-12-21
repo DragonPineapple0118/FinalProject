@@ -35,7 +35,7 @@ public partial class Main : Control
     private List<(Suit,Rank)> _deck = new List<(Suit,Rank)>();
     private List<MagicCard> _magicCard = new List<MagicCard>();
     private Dictionary<HandType, int> _handBonuses = new Dictionary<HandType,int>();
-    private List<Suit> _SuitChanges = new List<Suit>();
+    private Dictionary<Suit, SuitChange> _activeSuitChanges = new Dictionary<Suit, SuitChange>();
     private int _currentScore = 0;
     private int _targetScore = 55;
     private int _currentStage = 1;
@@ -394,7 +394,7 @@ public partial class Main : Control
         _money = 4;
         _magicCard.Clear();
         _handBonuses.Clear();
-        _SuitChanges.Clear();
+        _activeSuitChanges.Clear();
         GameOverPanel.Visible = false;
         PlayHandButton.Disabled = false;
         DiscardButton.Disabled = false;
@@ -418,9 +418,9 @@ public partial class Main : Control
         GD.Print($"Added hand bonus: {handType} +{bonus} chips (total: {_handBonuses[handType]})");
     }
     
-    public void EnableSuitChange(Suit suit)
+    public void EnableSuitChange(Suit suit, SuitChange magicCard)
     {
-        _SuitChanges.Add(suit);
+        _activeSuitChanges[suit] = magicCard;
         foreach (Node child in HandContainer.GetChildren())
         {
             if(child is Card card && card._suit != suit)
@@ -428,7 +428,33 @@ public partial class Main : Control
                 card.EnableSuitChange(suit);
             }
         }
-        GD.Print($"Suit Change to {suit} is enabled");
+        GD.Print($"Suit Change to {suit} is enabled (one-time use)");
+    }
+    
+    public void OnCardSuitChanged(Suit oldSuit, Suit newSuit)
+    {
+        GD.Print($"Card suit changed from {oldSuit} to {newSuit}");
+        
+        // Find and remove the used magic card
+        if (_activeSuitChanges.ContainsKey(newSuit))
+        {
+            var usedMagicCard = _activeSuitChanges[newSuit];
+            _magicCard.Remove(usedMagicCard);
+            _activeSuitChanges.Remove(newSuit);
+            
+            GD.Print($"Suit change magic card for {newSuit} has been used and removed");
+            
+            // Disable suit change on all remaining cards for this suit
+            foreach (Node child in HandContainer.GetChildren())
+            {
+                if (child is Card card)
+                {
+                    card.DisableSuitChange(newSuit);
+                }
+            }
+            
+            UpdateMagicCardDisplay();
+        }
     }
     
     private void ShuffleDeck()
@@ -461,10 +487,12 @@ public partial class Main : Control
             Card NewCard = CardObject.Instantiate<Card>();
             HandContainer.AddChild(NewCard);
             NewCard.SetData(data.Item1,data.Item2);
+            NewCard.GlobalPosition = new Vector2(1200,700);
             
             // Apply suit changes to new cards if available
-            foreach (var targetSuit in _SuitChanges)
+            foreach (var kvp in _activeSuitChanges)
             {
+                Suit targetSuit = kvp.Key;
                 if (NewCard._suit != targetSuit)
                 {
                     NewCard.EnableSuitChange(targetSuit);
@@ -476,6 +504,12 @@ public partial class Main : Control
                 if(GetSelectedCards().Count > 5)
                     NewCard.SetSelected();
                 UpdateUI();
+            };
+            
+            // Add event for suit change notification
+            NewCard.OnSuitChanged += (oldSuit, newSuit) =>
+            {
+                OnCardSuitChanged(oldSuit, newSuit);
             };
         }
     }

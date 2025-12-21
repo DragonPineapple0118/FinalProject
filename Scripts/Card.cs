@@ -33,6 +33,7 @@ public partial class Card : Button
     private float _jumpHeight = 20f;
 	private bool _hovering = false;
 	public event Action OnSelectedChanged;
+	public event Action<Suit, Suit> OnSuitChanged;
 
 	public override void _Ready()
 	{
@@ -100,8 +101,15 @@ public partial class Card : Button
 		}
 		if(@event is InputEventMouseButton mouseEvent)
 		{
-			if(mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed);
+			if(mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
+			{
 				CardPressed();
+			}
+			// 添加右鍵檢測來進行花色轉換
+			else if(mouseEvent.ButtonIndex == MouseButton.Right && mouseEvent.Pressed && CanChangeSuit)
+			{
+				ChangeSuit();
+			}
 		}
 	}
 	public void SetData(Suit s, Rank r)
@@ -183,6 +191,7 @@ public partial class Card : Button
 	{
 		CanChangeSuit = true;
 		ChangeSuitTo = suit;
+		GD.Print($"Card {_rank} of {_suit} can now be changed to {suit} (right-click)");
 	}
 	private void ChangeSuit()
 	{
@@ -192,5 +201,17 @@ public partial class Card : Button
 		CanChangeSuit = false;
 		SetData(_suit,_rank);
 		GD.Print($"Suit changed from {oldSuit} to {_suit}");
+		
+		// Notify Main that suit was changed
+		OnSuitChanged?.Invoke(oldSuit, _suit);
+	}
+	
+	public void DisableSuitChange(Suit suit)
+	{
+		if (ChangeSuitTo == suit)
+		{
+			CanChangeSuit = false;
+			GD.Print($"Disabled suit change to {suit} for card {_rank} of {_suit}");
+		}
 	}
 }

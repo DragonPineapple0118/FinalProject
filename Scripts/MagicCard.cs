@@ -36,6 +36,6 @@ public class SuitChange : MagicCard
     }
     public override void ApplyEffect(Main game)
     {
-        game.EnableSuitChange(ToSuit);
+        game.EnableSuitChange(ToSuit, this);
     }
 }
