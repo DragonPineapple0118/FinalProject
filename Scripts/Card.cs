@@ -26,6 +26,8 @@ public partial class Card : Button
 	[Export] public Vector2 CardSize = new Vector2(192, 270);
 	public Suit _suit ;
 	public Rank _rank;
+	private bool CanChangeSuit;
+	private Suit ChangeSuitTo;
 	public bool IsSelected = false;
 	private Vector2 _originalPosition;
     private float _jumpHeight = 20f;
@@ -36,6 +38,12 @@ public partial class Card : Button
 	{
 		GD.Print("Ready");
 		_cardVisual = GetNode<SubViewportContainer>("CardComp");
+		_cardVisual.GlobalPosition = new Vector2(1200,700);
+		_cardVisual.TopLevel = true;
+		_cardVisual.MouseFilter = Control.MouseFilterEnum.Stop;
+		_cardVisual.GuiInput += OnVisualGuiInput;
+		CardComp.MouseEntered += MouseHover;
+		CardComp.MouseExited += MouseExite;
 		var originalMat = _cardVisual.Material as ShaderMaterial;
 
     	// 為了安全起見，檢查一下是不是真的有抓到材質
@@ -49,9 +57,6 @@ public partial class Card : Button
         // 如果漏了這行，雖然你複製了材質，但卡片顯示時還是會用舊的那份共用材質
         	_cardVisual.Material = _cardMaterial;
     	}
-		CardComp.MouseEntered += MouseHover;
-		CardComp.MouseExited += MouseExite;
-		this.Pressed += CardPressed;
 	}
 
 	public override void _Process(double delta)
@@ -87,14 +92,18 @@ public partial class Card : Button
             _cardMaterial.SetShaderParameter("y_rot", _currentRotY);
         }
 	}
-	public override void _GuiInput(InputEvent @event)
-    {
-        // 偵測滑鼠移動事件
-        if (@event is InputEventMouseMotion)
-        {
-            HandleTiltEffect(GetLocalMousePosition());
-        }
-    }
+	private void OnVisualGuiInput(InputEvent @event)
+	{
+		if(@event is InputEventMouseMotion)
+		{
+			HandleTiltEffect(_cardVisual.GetLocalMousePosition());
+		}
+		if(@event is InputEventMouseButton mouseEvent)
+		{
+			if(mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed);
+				CardPressed();
+		}
+	}
 	public void SetData(Suit s, Rank r)
 	{
 		_rank = r;
@@ -145,11 +154,11 @@ public partial class Card : Button
 	private void HandleTiltEffect(Vector2 mousePos)
     {
 		// 這裡不再直接設定 Shader，而是只更新 "目標數值"
-		int YOffset=0;
-		if(_hovering)YOffset+=30;
-		if(IsSelected)YOffset+=60;
+		//int YOffset=0;
+		//if(_hovering)YOffset+=30;
+		//if(IsSelected)YOffset+=60;
         float lerpValX = Mathf.Remap(mousePos.X, 0, CardSize.X, 0, 1);
-        float lerpValY = Mathf.Remap(mousePos.Y+YOffset, 0, CardSize.Y, 0, 1);
+        float lerpValY = Mathf.Remap(mousePos.Y, 0, CardSize.Y, 0, 1);
 
         // 更新全域變數 _targetRot
         _targetRotY = Mathf.Lerp(-AngleYMax, AngleYMax, lerpValX);
@@ -169,5 +178,19 @@ public partial class Card : Button
 	public void SetSelected()
 	{
 		IsSelected = false;
+	}
+	public void EnableSuitChange(Suit suit)
+	{
+		CanChangeSuit = true;
+		ChangeSuitTo = suit;
+	}
+	private void ChangeSuit()
+	{
+		if(!CanChangeSuit)return;
+		Suit oldSuit = _suit;
+		_suit = ChangeSuitTo;
+		CanChangeSuit = false;
+		SetData(_suit,_rank);
+		GD.Print($"Suit changed from {oldSuit} to {_suit}");
 	}
 }

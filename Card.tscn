@@ -37,6 +37,7 @@ CardBack = NodePath("CardComp/SubViewport/CardVisual/CardBack")
 CardSize = Vector2(140, 200)
 
 [node name="CardComp" type="SubViewportContainer" parent="."]
+top_level = true
 z_index = 1
 material = SubResource("ShaderMaterial_wi8ie")
 layout_mode = 0
