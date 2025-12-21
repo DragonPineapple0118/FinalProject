@@ -83,6 +83,7 @@ public partial class Main : Control
         ClearHand();
         DrawCard(DrawCardCount);
         UpdateUI();
+        ShopPanel.Visible = false;
         
     }
     private void CalculateScore(List<Card> cards,HandType handType)
@@ -203,12 +204,23 @@ public partial class Main : Control
         List<Card> selectedCards = GetSelectedCards();
         if (selectedCards.Count()==0) return;
         HandType handType = HandEvaluator.Evaluate(selectedCards);
+        double _stageEffect =1;
+        if(_currentStage == 2)
+        {
+            _stageEffect = handType switch
+            {
+                HandType.Single => 0.5,
+                HandType.Pair => 2,
+                _ => 1
+            };
+        }
         CalculateScore(selectedCards, handType);
-        int totalScore = _baseChips * _multiplier;
+        int totalScore = (int)(_baseChips * _multiplier * _stageEffect);
         _currentScore += totalScore;
         _handsLeft--;
-        GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult = {totalScore} points");
-        int DecreasedCardCount = selectedCards.Count();
+        if(_stageEffect==1)GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult = {totalScore} points");
+        else GD.Print($"Played {handType}: {_baseChips} chips x {_multiplier} mult x {_stageEffect} Stage Effect = {totalScore} points");
+       int DecreasedCardCount = selectedCards.Count();
         foreach(var card in selectedCards)
             card.QueueFree();
         DrawCard(DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount));
@@ -249,6 +261,7 @@ public partial class Main : Control
     }
     private void OpenShop()
     {
+        ShopPanel.Visible = true;
         
     }
     private void CloseShopPressed()
@@ -262,6 +275,8 @@ public partial class Main : Control
     private void SortSwitch()
     {
         _sortByRank=!_sortByRank;
+        SortToggleButton.Text = _sortByRank ? "Sort : Rank" : "Sort : Suit";
+        Sort();
     }
     private void ShuffleDeck()
     {
@@ -336,14 +351,14 @@ public partial class Main : Control
         List<Card> selectedCards = GetSelectedCards();
         HandType handType = HandEvaluator.Evaluate(selectedCards);
         CalculateScore(selectedCards,handType);
-        TypeLabel.Text = $"Hand Type : {handType}";
-        ScoreLabel.Text = $"Score : {_currentScore}/{_targetScore}";
-        ChipsLabel.Text = $"Chips : {_baseChips}";
-        MultLabel.Text = $"Multiplier : {_multiplier}";
-        StageLabel.Text = $"Stage : {_currentStage}";
-        HandLabel.Text = $"Hands : {_handsLeft}";
-        DiscardLabel.Text = $"Discards : {_discardLeft}";
-        MoneyLabel.Text = $"Money : {_money}";
+        TypeLabel.Text = $"{handType}";
+        ScoreLabel.Text = $"{_currentScore}/{_targetScore}";
+        ChipsLabel.Text = $"{_baseChips}";
+        MultLabel.Text = $"{_multiplier}";
+        StageLabel.Text = $"Stage{_currentStage}";
+        HandLabel.Text = $"{_handsLeft}";
+        DiscardLabel.Text = $"{_discardLeft}";
+        MoneyLabel.Text = $"{_money}";
     }
     
 }

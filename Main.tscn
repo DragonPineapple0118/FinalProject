@@ -1,25 +1,30 @@
-[gd_scene load_steps=9 format=3 uid="uid://da03m43gv16km"]
+[gd_scene load_steps=15 format=3 uid="uid://da03m43gv16km"]
 
 [ext_resource type="Script" uid="uid://dkfxw22fq7i62" path="res://Scripts/Main.cs" id="1_glv2v"]
 [ext_resource type="PackedScene" uid="uid://esdhdyv14tvv" path="res://Card.tscn" id="2_uu6xs"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_rxg2q"]
-font_size = 30
-font_color = Color(0, 0, 0, 1)
-outline_size = 4
-
 [sub_resource type="LabelSettings" id="LabelSettings_glv2v"]
-font_size = 25
-font_color = Color(0, 0, 0, 1)
-outline_size = 4
-
-[sub_resource type="LabelSettings" id="LabelSettings_uu6xs"]
-font_size = 25
-font_color = Color(0, 0, 0, 1)
-outline_size = 4
+font_size = 30
+font_color = Color(0.7875421, 4.1633098e-06, 5.7756904e-07, 1)
+outline_size = 5
 
 [sub_resource type="LabelSettings" id="LabelSettings_fos0i"]
-font_size = 25
+font_size = 40
+font_color = Color(0, 0, 0, 1)
+outline_size = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_rxg2q"]
+font_size = 50
+font_color = Color(0, 0, 0, 1)
+outline_size = 6
+
+[sub_resource type="LabelSettings" id="LabelSettings_3dxm6"]
+font_size = 30
+font_color = Color(0, 0, 0, 1)
+outline_size = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_uu6xs"]
+font_size = 50
 font_color = Color(0, 0, 0, 1)
 outline_size = 5
 
@@ -34,6 +39,21 @@ font_color = Color(0, 0, 0, 1)
 outline_size = 15
 shadow_size = 26
 
+[sub_resource type="LabelSettings" id="LabelSettings_03owx"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_wkp8b"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_20pc6"]
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_lgr22"]
+font_size = 30
+
+[sub_resource type="LabelSettings" id="LabelSettings_trn2v"]
+font_size = 30
+
 [node name="Main" type="Control" node_paths=PackedStringArray("HandContainer", "JokerContainer", "ScoreLabel", "ChipsLabel", "MultLabel", "StageLabel", "HandLabel", "DiscardLabel", "MoneyLabel", "TypeLabel", "PlayHandButton", "DiscardButton", "ShopPanel", "ShopItemContainer", "CloseShopButton", "SortToggleButton")]
 layout_mode = 3
 anchors_preset = 0
@@ -45,8 +65,8 @@ CardObject = ExtResource("2_uu6xs")
 HandContainer = NodePath("HandContainer")
 JokerContainer = NodePath("MagicCardContainer")
 ScoreLabel = NodePath("Score")
-ChipsLabel = NodePath("chips")
-MultLabel = NodePath("multiple")
+ChipsLabel = NodePath("Chips")
+MultLabel = NodePath("Mult")
 StageLabel = NodePath("Stage")
 HandLabel = NodePath("HandNum")
 DiscardLabel = NodePath("DiscardNum")
@@ -54,88 +74,87 @@ MoneyLabel = NodePath("Money")
 TypeLabel = NodePath("TypeLabel")
 PlayHandButton = NodePath("HandCard")
 DiscardButton = NodePath("DiscardCard")
-ShopPanel = NodePath("ShopUI/ShopPanel")
-ShopItemContainer = NodePath("ShopUI/ItemContainer")
-CloseShopButton = NodePath("ShopUI/CloseShop")
+ShopPanel = NodePath("ShopPanel")
+ShopItemContainer = NodePath("ShopPanel/ItemContainer")
+CloseShopButton = NodePath("ShopPanel/CloseShop")
 SortToggleButton = NodePath("SwitchSort")
 
 [node name="ColorRect" type="ColorRect" parent="."]
+z_index = -1
 layout_mode = 0
 offset_right = 1155.0
 offset_bottom = 650.0
 color = Color(0.17207247, 0.34228396, 0.17219663, 1)
 
-[node name="Score" type="Label" parent="."]
+[node name="X" type="Label" parent="."]
 layout_mode = 0
-offset_left = 35.0
-offset_top = 26.0
-offset_right = 142.0
-offset_bottom = 68.0
-text = "Score:"
-label_settings = SubResource("LabelSettings_rxg2q")
-
-[node name="chips" type="Label" parent="."]
-layout_mode = 0
-offset_left = 35.0
-offset_top = 72.0
-offset_right = 142.0
-offset_bottom = 107.0
-text = "Chips:"
+offset_left = 36.0
+offset_top = 207.0
+offset_right = 223.0
+offset_bottom = 249.0
+text = "X"
 label_settings = SubResource("LabelSettings_glv2v")
-
-[node name="multiple" type="Label" parent="."]
-layout_mode = 0
-offset_left = 35.0
-offset_top = 111.0
-offset_right = 142.0
-offset_bottom = 146.0
-text = "Multiple:"
-label_settings = SubResource("LabelSettings_uu6xs")
+horizontal_alignment = 1
 
 [node name="TypeLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 37.0
-offset_top = 150.0
-offset_right = 101.0
-offset_bottom = 185.0
+offset_left = 35.0
+offset_top = 147.0
+offset_right = 223.0
+offset_bottom = 202.0
 text = "Type:"
 label_settings = SubResource("LabelSettings_fos0i")
+horizontal_alignment = 1
 
 [node name="Stage" type="Label" parent="."]
 layout_mode = 0
-offset_left = 435.0
-offset_top = 26.0
-offset_right = 545.0
-offset_bottom = 68.0
+offset_left = 53.0
+offset_top = 23.0
+offset_right = 200.0
+offset_bottom = 92.0
 text = "Stage:"
 label_settings = SubResource("LabelSettings_rxg2q")
+horizontal_alignment = 1
 
-[node name="HandNum" type="Label" parent="."]
+[node name="Score" type="Label" parent="."]
 layout_mode = 0
-offset_left = 435.0
-offset_top = 72.0
-offset_right = 545.0
-offset_bottom = 107.0
-text = "Hands:"
-label_settings = SubResource("LabelSettings_glv2v")
+offset_left = 84.0
+offset_top = 91.0
+offset_right = 164.0
+offset_bottom = 133.0
+text = "Score"
+label_settings = SubResource("LabelSettings_3dxm6")
+horizontal_alignment = 1
 
 [node name="DiscardNum" type="Label" parent="."]
 layout_mode = 0
-offset_left = 435.0
-offset_top = 111.0
-offset_right = 545.0
-offset_bottom = 146.0
-text = "Discards:"
+offset_left = 145.0
+offset_top = 336.0
+offset_right = 195.0
+offset_bottom = 405.0
+text = "2"
 label_settings = SubResource("LabelSettings_uu6xs")
+horizontal_alignment = 1
+
+[node name="HandNum" type="Label" parent="."]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 336.0
+offset_right = 115.0
+offset_bottom = 405.0
+text = "2"
+label_settings = SubResource("LabelSettings_uu6xs")
+horizontal_alignment = 1
 
 [node name="Money" type="Label" parent="."]
 layout_mode = 0
-offset_left = 435.0
-offset_top = 150.0
-offset_right = 545.0
-offset_bottom = 185.0
-text = "Money:"
+offset_left = 79.0
+offset_top = 429.0
+offset_right = 179.0
+offset_bottom = 498.0
+text = "5"
 label_settings = SubResource("LabelSettings_uu6xs")
+horizontal_alignment = 1
 
 [node name="MagicCardLable" type="Label" parent="."]
 layout_mode = 0
@@ -155,63 +174,186 @@ offset_bottom = 176.0
 
 [node name="HandContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 230.0
-offset_top = 420.0
-offset_right = 1033.0
-offset_bottom = 583.0
+offset_left = 298.0
+offset_top = 371.0
+offset_right = 1101.0
+offset_bottom = 534.0
 theme_override_constants/separation = 80
 
 [node name="HandCard" type="Button" parent="."]
 layout_mode = 0
-offset_left = 511.0
-offset_top = 325.0
-offset_right = 617.0
-offset_bottom = 361.0
+offset_left = 461.0
+offset_top = 600.0
+offset_right = 567.0
+offset_bottom = 640.0
 size_flags_horizontal = 4
 theme_override_font_sizes/font_size = 20
 text = "Play Hand"
 
 [node name="DiscardCard" type="Button" parent="."]
 layout_mode = 0
-offset_left = 626.0
-offset_top = 325.0
-offset_right = 730.0
-offset_bottom = 361.0
+offset_left = 676.0
+offset_top = 600.0
+offset_right = 766.0
+offset_bottom = 640.0
 theme_override_font_sizes/font_size = 20
 text = "Discard"
 
 [node name="SwitchSort" type="Button" parent="."]
 layout_mode = 0
-offset_left = 1042.0
-offset_top = 424.0
-offset_right = 1133.0
-offset_bottom = 460.0
-text = "SortSwitch"
+offset_left = 576.0
+offset_top = 600.0
+offset_right = 668.0
+offset_bottom = 640.0
+text = "Sort : Rank"
 
-[node name="ShopUI" type="VBoxContainer" parent="."]
+[node name="ShopPanel" type="Panel" parent="."]
 visible = false
 layout_mode = 0
 offset_left = 270.0
 offset_top = 139.0
 offset_right = 895.0
-offset_bottom = 500.0
+offset_bottom = 139.0
 
-[node name="ShopPanel" type="Panel" parent="ShopUI"]
-layout_mode = 2
+[node name="ColorRect2" type="ColorRect" parent="ShopPanel"]
+layout_mode = 0
+offset_left = -9.0
+offset_top = 4.0
+offset_right = 616.0
+offset_bottom = 361.0
+color = Color(0.25934473, 0.40390927, 0.60465634, 1)
 
-[node name="ColorRect" type="ColorRect" parent="ShopUI"]
-layout_mode = 2
-color = Color(0.015037105, 0.44901425, 0.5326547, 1)
-
-[node name="ShopText" type="Label" parent="ShopUI"]
-layout_mode = 2
+[node name="ShopText" type="Label" parent="ShopPanel"]
+layout_mode = 0
+offset_left = 239.0
+offset_top = 5.0
+offset_right = 364.0
+offset_bottom = 47.0
 text = "Shop"
 label_settings = SubResource("LabelSettings_cm0pq")
 horizontal_alignment = 1
 
-[node name="ItemContainer" type="HBoxContainer" parent="ShopUI"]
-layout_mode = 2
+[node name="ItemContainer" type="HBoxContainer" parent="ShopPanel"]
+layout_mode = 0
+offset_left = -3.0
+offset_top = 116.0
+offset_right = 610.0
+offset_bottom = 251.0
 
-[node name="CloseShop" type="Button" parent="ShopUI"]
-layout_mode = 2
+[node name="CloseShop" type="Button" parent="ShopPanel"]
+layout_mode = 0
+offset_left = 257.0
+offset_top = 319.0
+offset_right = 347.0
+offset_bottom = 350.0
 text = "Close"
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 25.0
+offset_top = 2.0
+offset_right = 235.0
+offset_bottom = 652.0
+color = Color(0.18359044, 0.18359044, 0.18359044, 1)
+
+[node name="Label2" type="Label" parent="."]
+layout_mode = 0
+offset_left = 137.0
+offset_top = 315.0
+offset_right = 203.0
+offset_bottom = 338.0
+text = "Discards"
+label_settings = SubResource("LabelSettings_03owx")
+horizontal_alignment = 1
+
+[node name="Label3" type="Label" parent="."]
+layout_mode = 0
+offset_left = 101.0
+offset_top = 415.0
+offset_right = 154.0
+offset_bottom = 438.0
+text = "Money"
+label_settings = SubResource("LabelSettings_wkp8b")
+horizontal_alignment = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 65.0
+offset_top = 314.0
+offset_right = 115.0
+offset_bottom = 337.0
+text = "Hands"
+label_settings = SubResource("LabelSettings_20pc6")
+
+[node name="ColorRect4" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 41.0
+offset_top = 209.0
+offset_right = 111.0
+offset_bottom = 249.0
+color = Color(0.25505662, 0.54966384, 0.9872163, 1)
+
+[node name="ColorRect3" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 150.0
+offset_top = 209.0
+offset_right = 220.0
+offset_bottom = 249.0
+color = Color(1, 0.21268043, 0.15969583, 1)
+
+[node name="Chips" type="Label" parent="."]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 208.0
+offset_right = 110.0
+offset_bottom = 250.0
+text = "5"
+label_settings = SubResource("LabelSettings_lgr22")
+horizontal_alignment = 2
+
+[node name="Mult" type="Label" parent="."]
+layout_mode = 0
+offset_left = 152.0
+offset_top = 208.0
+offset_right = 216.0
+offset_bottom = 250.0
+text = "5"
+label_settings = SubResource("LabelSettings_trn2v")
+
+[node name="ColorRect5" type="ColorRect" parent="."]
+layout_mode = 0
+offset_left = 42.0
+offset_top = 258.0
+offset_right = 220.0
+offset_bottom = 298.0
+color = Color(1, 1, 0.38039216, 1)
+
+[node name="ColorRect7" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 52.0
+offset_top = 412.0
+offset_right = 209.0
+offset_bottom = 501.0
+color = Color(0.82606, 0.82606006, 0.82606, 1)
+
+[node name="ColorRect8" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 133.0
+offset_top = 312.0
+offset_right = 208.0
+offset_bottom = 405.0
+color = Color(0.82606, 0.82606006, 0.82606, 1)
+
+[node name="ColorRect6" type="ColorRect" parent="."]
+z_index = -1
+layout_mode = 0
+offset_left = 52.0
+offset_top = 312.0
+offset_right = 127.0
+offset_bottom = 405.0
+color = Color(0.82606, 0.82606006, 0.82606, 1)
