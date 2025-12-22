@@ -12,6 +12,7 @@ public partial class Card : Button
     private float _targetRotY = 0f;
     private float _currentRotX = 0f;
     private float _currentRotY = 0f;
+    private Vector2 _basePosition; // 卡片的基礎位置
     [Export] public float SmoothSpeed = 10.0f;
 	// -----------------------------------------
 	[Export] public float AngleXMax = 15.0f; 
@@ -40,6 +41,7 @@ public partial class Card : Button
 		GD.Print("Ready");
 		_cardVisual = GetNode<SubViewportContainer>("CardComp");
 		_cardVisual.GlobalPosition = new Vector2(1200,700);
+		_basePosition = _cardVisual.GlobalPosition; // 記錄初始位置
 		_cardVisual.TopLevel = true;
 		_cardVisual.MouseFilter = Control.MouseFilterEnum.Stop;
 		_cardVisual.GuiInput += OnVisualGuiInput;
@@ -62,26 +64,32 @@ public partial class Card : Button
 
 	public override void _Process(double delta)
 	{
-		Vector2 targetOffset = Vector2.Zero;
 		float fDelta = (float)delta;
-		if(IsSelected||_hovering){
+		
+		// 更新基礎位置（跟隨Button的位置）
+		_basePosition = GlobalPosition;
+		
+		// 計算目標偏移量
+		Vector2 targetOffset = Vector2.Zero;
 		if (IsSelected)
 		{
-			targetOffset += new Vector2(0,-60);
+			targetOffset += new Vector2(0, -60);
 		}
-		if  (_hovering)
+		if (_hovering)
 		{
-			targetOffset += new Vector2(0,-30);
-		}}
-		else targetOffset = new Vector2(0,0);
-		Vector2 FinalTargetPos = GlobalPosition + targetOffset;
-        // 1. 位置跟隨邏輯 (你原本的邏輯)
+			targetOffset += new Vector2(0, -30);
+		}
+		
+		// 計算最終目標位置
+		Vector2 finalTargetPos = _basePosition + targetOffset;
+		
+        // 位置跟隨邏輯 - 平滑移動到目標位置
         if(_cardVisual != null){
-            _cardVisual.GlobalPosition = _cardVisual.GlobalPosition.Lerp(FinalTargetPos, fDelta * FollowSpeed);
+            _cardVisual.GlobalPosition = _cardVisual.GlobalPosition.Lerp(finalTargetPos, fDelta * FollowSpeed);
             _cardVisual.Rotation = Mathf.LerpAngle(_cardVisual.Rotation, Rotation, fDelta * FollowSpeed);
         }
 
-        // === 2. 新增：傾斜角度的平滑運算 (這段要獨立出來，讓它隨時都在跑) ===
+        // 傾斜角度的平滑運算
         if (_cardMaterial != null)
         {
             // 利用 Lerp 讓 目前角度 慢慢接近 目標角度
