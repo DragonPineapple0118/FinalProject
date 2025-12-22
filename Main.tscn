@@ -67,7 +67,7 @@ font_size = 30
 font_color = Color(0, 0, 0, 1)
 outline_size = 5
 
-[node name="Main" type="Control" node_paths=PackedStringArray("HandContainer", "JokerContainer", "ScoreLabel", "ChipsLabel", "MultLabel", "StageLabel", "HandLabel", "DiscardLabel", "MoneyLabel", "TypeLabel", "PlayHandButton", "DiscardButton", "ShopPanel", "ShopItemContainer", "CloseShopButton", "SortToggleButton", "GameOverPanel", "GameOverScoreLabel", "RetryButton", "BonusLabel")]
+[node name="Main" type="Control" node_paths=PackedStringArray("HandContainer", "JokerContainer", "ScoreLabel", "ChipsLabel", "MultLabel", "StageLabel", "HandLabel", "DiscardLabel", "MoneyLabel", "TypeLabel", "PlayHandButton", "DiscardButton", "ShopPanel", "ShopItemContainer", "CloseShopButton", "SortToggleButton", "DiscardRedrawButton", "GameOverPanel", "GameOverScoreLabel", "RetryButton", "BonusLabel")]
 layout_mode = 3
 anchors_preset = 0
 offset_left = -2.0
@@ -91,6 +91,7 @@ ShopPanel = NodePath("ShopPanel")
 ShopItemContainer = NodePath("ShopPanel/ItemContainer")
 CloseShopButton = NodePath("ShopPanel/CloseShop")
 SortToggleButton = NodePath("SwitchSort")
+DiscardRedrawButton = NodePath("ReDrawButton")
 GameOverPanel = NodePath("GameOverPanel")
 GameOverScoreLabel = NodePath("GameOverPanel/ScoreLabel")
 RetryButton = NodePath("GameOverPanel/ReplayButton")
@@ -175,18 +176,18 @@ horizontal_alignment = 1
 
 [node name="MagicCardLable" type="Label" parent="."]
 layout_mode = 0
-offset_left = 586.0
-offset_top = 178.0
-offset_right = 749.0
-offset_bottom = 220.0
+offset_left = 594.0
+offset_top = 177.0
+offset_right = 757.0
+offset_bottom = 219.0
 text = "MagicCard"
 label_settings = SubResource("LabelSettings_r0du0")
 
 [node name="MagicCardContainer" type="HBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 281.0
+offset_left = 311.0
 offset_top = 10.0
-offset_right = 1020.0
+offset_right = 1079.0
 offset_bottom = 174.0
 
 [node name="HandContainer" type="HBoxContainer" parent="."]
@@ -215,6 +216,16 @@ offset_right = 766.0
 offset_bottom = 640.0
 theme_override_font_sizes/font_size = 20
 text = "Discard"
+
+[node name="ReDrawButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 774.0
+offset_top = 600.0
+offset_right = 864.0
+offset_bottom = 640.0
+theme_override_font_sizes/font_size = 20
+text = "Redraw
+"
 
 [node name="SwitchSort" type="Button" parent="."]
 layout_mode = 0

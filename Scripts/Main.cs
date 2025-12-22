@@ -27,6 +27,7 @@ public partial class Main : Control
     [Export] public Control ShopItemContainer;
     [Export] public Button CloseShopButton;
     [Export] public Button SortToggleButton;
+    [Export] public Button DiscardRedrawButton;
     [Export] public Panel GameOverPanel;
     [Export] public Label GameOverScoreLabel;
     [Export] public Button RetryButton;
@@ -36,6 +37,10 @@ public partial class Main : Control
     private List<MagicCard> _magicCard = new List<MagicCard>();
     private Dictionary<HandType, int> _handBonuses = new Dictionary<HandType,int>();
     private Dictionary<Suit, SuitChange> _activeSuitChanges = new Dictionary<Suit, SuitChange>();
+    private Dictionary<Rank, float> _cardMultipliers = new Dictionary<Rank, float>();
+    private List<DiscardRedraw> _discardRedraws = new List<DiscardRedraw>();
+    private int _extraHandsBonus = 0;
+    private int _extraDiscardsBonus = 0;
     private int _currentScore = 0;
     private int _targetScore = 55;
     private int _currentStage = 1;
@@ -56,6 +61,14 @@ public partial class Main : Control
         DiscardButton.Pressed += DiscardPressed;
         CloseShopButton.Pressed += CloseShopPressed;
         SortToggleButton.Pressed += SortSwitch;
+        
+        // Connect Fresh Hand button if it exists
+        if (DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Pressed += DiscardRedrawPressed;
+            DiscardRedrawButton.Visible = false; // Initially hidden
+        }
+        
         RetryButton.Pressed += Retry;
         Initialize();
         NewStage();
@@ -83,10 +96,12 @@ public partial class Main : Control
     private void NewStage()
     {
         _currentScore = 0;
-        _handsLeft = 4;
-        _discardLeft = 3;
+        _handsLeft = 4 + _extraHandsBonus;
+        _discardLeft = 3 + _extraDiscardsBonus;
         _targetScore = 300+(_currentStage-1)*150;
         GD.Print($"Starting Stage {_currentStage}");
+        GD.Print($"Hands: {_handsLeft} (base 4 + {_extraHandsBonus} bonus)");
+        GD.Print($"Discards: {_discardLeft} (base 3 + {_extraDiscardsBonus} bonus)");
         Initialize();
         ShuffleDeck();
         ClearHand();
@@ -202,7 +217,7 @@ public partial class Main : Control
     
     private int GetCardChips(Rank rank)
     {
-        return rank switch
+        int baseChips = rank switch
         {
             Rank.Two => 12,
             Rank.Three => 3,
@@ -219,6 +234,15 @@ public partial class Main : Control
             Rank.Ace => 11,
             _ => 0
         };
+        
+        // Apply card multiplier if exists
+        if (_cardMultipliers.ContainsKey(rank))
+        {
+            baseChips = (int)(baseChips * _cardMultipliers[rank]);
+            GD.Print($"Applied multiplier to {rank}: x{_cardMultipliers[rank]} = {baseChips} chips");
+        }
+        
+        return baseChips;
     }
     
     private void PlayHandPressed()
@@ -248,7 +272,11 @@ public partial class Main : Control
         int DecreasedCardCount = selectedCards.Count();
         foreach(var card in selectedCards)
             card.QueueFree();
-        DrawCard(DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount));
+        
+        // Draw cards to maintain hand size
+        int cardsToDraw = DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount);
+        DrawCard(cardsToDraw);
+        
         UpdateUI();
         IfWin();
     }
@@ -299,6 +327,7 @@ public partial class Main : Control
             
         var Cards = new List<MagicCard>
         {
+            // Hand Score Upgrades
             new HandScoreUpgrade(HandType.Single,2),
             new HandScoreUpgrade(HandType.Pair,3),
             new HandScoreUpgrade(HandType.TwoPair,4),
@@ -307,10 +336,32 @@ public partial class Main : Control
             new HandScoreUpgrade(HandType.FullHouse,6),
             new HandScoreUpgrade(HandType.FourOfAKind,7),
             new HandScoreUpgrade(HandType.StraightFlush,8),
+            
+            // Suit Changes
             new SuitChange(Suit.Hearts),
             new SuitChange(Suit.Diamonds),
             new SuitChange(Suit.Clubs),
             new SuitChange(Suit.Spades),
+            
+            // Card Multipliers
+            new CardMultiplier(Rank.Nine, 2.0f),
+            new CardMultiplier(Rank.Ten, 1.5f),
+            new CardMultiplier(Rank.Jack, 1.5f),
+            new CardMultiplier(Rank.Queen, 1.5f),
+            new CardMultiplier(Rank.King, 1.5f),
+            new CardMultiplier(Rank.Ace, 2.0f),
+            new CardMultiplier(Rank.Two, 1.5f),
+            
+            // Special Abilities
+            new DiscardRedraw(),
+            new DrawBoost(1),
+            new DrawBoost(2),
+            
+            // Extra Actions
+            new ExtraHands(1),
+            new ExtraHands(2),
+            new ExtraDiscards(1),
+            new ExtraDiscards(2),
         };
         
         var random = new Random();
@@ -326,24 +377,21 @@ public partial class Main : Control
         itemContainer.CustomMinimumSize = new Vector2(280, 120);
         ShopItemContainer.AddChild(itemContainer);
         
-        // Add background panel
-        var panel = new Panel();
-        panel.Size = new Vector2(280, 120);
-        itemContainer.AddChild(panel);
-        
         var nameLabel = new Label();
         nameLabel.Text = magicCard.Name;
-        nameLabel.AddThemeStyleboxOverride("normal", new StyleBoxFlat());
+        nameLabel.HorizontalAlignment = HorizontalAlignment.Center;
         itemContainer.AddChild(nameLabel);
         
         var descLabel = new Label();
         descLabel.Text = magicCard.Description;
         descLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
         descLabel.CustomMinimumSize = new Vector2(260, 40);
+        descLabel.HorizontalAlignment = HorizontalAlignment.Center;
         itemContainer.AddChild(descLabel);
         
         var priceLabel = new Label();
         priceLabel.Text = "Price: $3";
+        priceLabel.HorizontalAlignment = HorizontalAlignment.Center;
         itemContainer.AddChild(priceLabel);
         
         var buyButton = new Button();
@@ -392,13 +440,25 @@ public partial class Main : Control
         _handsLeft = 5;
         _discardLeft = 3;
         _money = 4;
+        DrawCardCount = 7; // Reset to original draw count
+        _extraHandsBonus = 0; // Reset extra hands bonus
+        _extraDiscardsBonus = 0; // Reset extra discards bonus
         _magicCard.Clear();
         _handBonuses.Clear();
         _activeSuitChanges.Clear();
+        _cardMultipliers.Clear();
+        _discardRedraws.Clear();
         GameOverPanel.Visible = false;
         PlayHandButton.Disabled = false;
         DiscardButton.Disabled = false;
         SortToggleButton.Disabled = false;
+        
+        // Hide Fresh Hand button
+        if (DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Visible = false;
+        }
+        
         NewStage();
     }
     
@@ -416,6 +476,69 @@ public partial class Main : Control
         else
             _handBonuses[handType] = bonus;
         GD.Print($"Added hand bonus: {handType} +{bonus} chips (total: {_handBonuses[handType]})");
+    }
+    
+    public void AddCardMultiplier(Rank rank, float multiplier)
+    {
+        if (_cardMultipliers.ContainsKey(rank))
+            _cardMultipliers[rank] *= multiplier;
+        else
+            _cardMultipliers[rank] = multiplier;
+        GD.Print($"Added card multiplier: {rank} x{multiplier} (total: x{_cardMultipliers[rank]})");
+    }
+    
+    public void EnableDiscardRedraw(DiscardRedraw magicCard)
+    {
+        _discardRedraws.Add(magicCard);
+        if (DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Visible = true;
+            DiscardRedrawButton.Disabled = false;
+        }
+        GD.Print("Discard/Redraw ability enabled");
+    }
+    
+    public void AddDrawBoost(int extraCards)
+    {
+        DrawCardCount += extraCards;
+        GD.Print($"Added draw boost: hand size increased by +{extraCards} (new hand size: {DrawCardCount})");
+    }
+    
+    public void AddExtraHands(int extraHands)
+    {
+        _extraHandsBonus += extraHands;
+        GD.Print($"Added extra hands: +{extraHands} hands per stage (total bonus: +{_extraHandsBonus})");
+    }
+    
+    public void AddExtraDiscards(int extraDiscards)
+    {
+        _extraDiscardsBonus += extraDiscards;
+        GD.Print($"Added extra discards: +{extraDiscards} discards per stage (total bonus: +{_extraDiscardsBonus})");
+    }
+    
+    private void DiscardRedrawPressed()
+    {
+        if (_discardRedraws.Count == 0) return;
+        
+        // Use one discard/redraw
+        var usedCard = _discardRedraws[0];
+        _discardRedraws.RemoveAt(0);
+        _magicCard.Remove(usedCard);
+        
+        // Discard all cards and draw new hand
+        ClearHand();
+        DrawCard(DrawCardCount);
+        
+        // Disable button if no more uses
+        if (_discardRedraws.Count == 0 && DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Disabled = true;
+            DiscardRedrawButton.Text = "Fresh Hand (Used)";
+        }
+        
+        UpdateUI();
+        UpdateMagicCardDisplay();
+        GD.Print("Used Discard/Redraw - drew new hand");
     }
     
     public void EnableSuitChange(Suit suit, SuitChange magicCard)
@@ -565,6 +688,13 @@ public partial class Main : Control
         DiscardLabel.Text = $"{_discardLeft}";
         BonusLabel.Text = $"{handBonusText}";
         MoneyLabel.Text = $"{_money}";
+        
+        // Update discard/redraw button
+        if (DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Visible = _discardRedraws.Count > 0;
+            DiscardRedrawButton.Text = _discardRedraws.Count > 0 ? "Fresh Hand" : "Fresh Hand (Used)";
+        }
     }
     
     private void UpdateMagicCardDisplay()
@@ -575,7 +705,7 @@ public partial class Main : Control
             
         GD.Print($"Updating magic card display. Total cards: {_magicCard.Count}");
         
-        // Display owned magic cards
+        // Display owned magic cards as simple text
         foreach (var magicCard in _magicCard)
         {
             var cardLabel = new Label();
@@ -583,6 +713,7 @@ public partial class Main : Control
             cardLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
             cardLabel.CustomMinimumSize = new Vector2(120, 80);
             JokerContainer.AddChild(cardLabel);
+            
             GD.Print($"Displaying magic card: {magicCard.Name}");
         }
     }
