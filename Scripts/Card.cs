@@ -33,6 +33,7 @@ public partial class Card : Button
 	private Vector2 _originalPosition;
     private float _jumpHeight = 20f;
 	private bool _hovering = false;
+	private bool _mousePressed = false; // 追蹤滑鼠是否按住
 	public event Action OnSelectedChanged;
 	public event Action<Suit, Suit> OnSuitChanged;
 
@@ -69,13 +70,26 @@ public partial class Card : Button
 		// 更新基礎位置（跟隨Button的位置）
 		_basePosition = GlobalPosition;
 		
+		// 使用更精確的滑鼠檢測 - 檢查滑鼠是否在CardVisual範圍內
+		bool mouseInCard = false;
+		if (_cardVisual != null)
+		{
+			Rect2 cardRect = new Rect2(_cardVisual.GlobalPosition, _cardVisual.Size);
+			mouseInCard = cardRect.HasPoint(GetGlobalMousePosition());
+		}
+		
 		// 計算目標偏移量
 		Vector2 targetOffset = Vector2.Zero;
 		if (IsSelected)
 		{
 			targetOffset += new Vector2(0, -60);
 		}
-		if (_hovering)
+		
+		// 改進的hover檢測邏輯：
+		// 1. 如果沒有按住滑鼠，使用正常的hover狀態
+		// 2. 如果按住滑鼠，直接檢查滑鼠是否在卡片上
+		bool shouldHover = _mousePressed ? mouseInCard : _hovering;
+		if (shouldHover)
 		{
 			targetOffset += new Vector2(0, -30);
 		}
@@ -109,9 +123,27 @@ public partial class Card : Button
 		}
 		if(@event is InputEventMouseButton mouseEvent)
 		{
-			if(mouseEvent.ButtonIndex == MouseButton.Left && mouseEvent.Pressed)
+			if(mouseEvent.ButtonIndex == MouseButton.Left)
 			{
-				CardPressed();
+				if (mouseEvent.Pressed)
+				{
+					_mousePressed = true;
+					CardPressed();
+				}
+				else
+				{
+					_mousePressed = false;
+					// 當滑鼠釋放時，檢查是否還在卡片上來決定是否保持hover效果
+					if (_cardVisual != null)
+					{
+						Rect2 cardRect = new Rect2(_cardVisual.GlobalPosition, _cardVisual.Size);
+						bool mouseStillInCard = cardRect.HasPoint(GetGlobalMousePosition());
+						if (!mouseStillInCard)
+						{
+							ResetTilt();
+						}
+					}
+				}
 			}
 			// 添加右鍵檢測來進行花色轉換
 			else if(mouseEvent.ButtonIndex == MouseButton.Right && mouseEvent.Pressed && CanChangeSuit)
@@ -165,7 +197,10 @@ public partial class Card : Button
 	{
 		_hovering = false;
 		this.ZIndex=1;
-		ResetTilt(); 
+		ResetTilt();
+		
+		// 只有在沒有按住滑鼠的情況下才完全離開
+		// 如果按住滑鼠，讓_Process方法中的mouseInCard檢測來處理
 	}
 	private void HandleTiltEffect(Vector2 mousePos)
     {
