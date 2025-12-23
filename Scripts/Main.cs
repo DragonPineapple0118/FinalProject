@@ -376,6 +376,14 @@ public partial class Main : Control
                 _ => 1
             };
         }
+        if(_currentStage == 3)
+        {
+            _stageEffect = handType switch
+            {
+                HandType.Single => 0,
+                _ => 1
+            };
+        }
         CalculateScore(selectedCards, handType);
         int totalScore = (int)(_baseChips * _multiplier * _stageEffect);
         _currentScore += totalScore;
