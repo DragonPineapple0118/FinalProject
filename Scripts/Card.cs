@@ -24,6 +24,7 @@ public partial class Card : Button
 	[Export] public Label RankLable2;
 	[Export] public TextureRect SuitImage;
 	[Export] public TextureRect CardBack;
+	[Export] public TextureRect Shadow;
 	[Export] public Vector2 CardSize = new Vector2(192, 270);
 	public Suit _suit ;
 	public Rank _rank;
@@ -40,7 +41,7 @@ public partial class Card : Button
 	public override void _Ready()
 	{
 		GD.Print("Ready");
-		_cardVisual = GetNode<SubViewportContainer>("CardComp");
+		_cardVisual = CardComp;	
 		_cardVisual.GlobalPosition = new Vector2(1200,700);
 		_basePosition = _cardVisual.GlobalPosition; // 記錄初始位置
 		_cardVisual.TopLevel = true;
@@ -80,9 +81,11 @@ public partial class Card : Button
 		
 		// 計算目標偏移量
 		Vector2 targetOffset = Vector2.Zero;
+		Vector2 shadowTargetOffset = new Vector2(10,10);
 		if (IsSelected)
 		{
 			targetOffset += new Vector2(0, -60);
+			shadowTargetOffset = new Vector2(10,-20);
 		}
 		
 		// 改進的hover檢測邏輯：
@@ -100,6 +103,7 @@ public partial class Card : Button
         // 位置跟隨邏輯 - 平滑移動到目標位置
         if(_cardVisual != null){
             _cardVisual.GlobalPosition = _cardVisual.GlobalPosition.Lerp(finalTargetPos, fDelta * FollowSpeed);
+            Shadow.GlobalPosition = Shadow.GlobalPosition.Lerp(_basePosition+shadowTargetOffset, fDelta * FollowSpeed);
             _cardVisual.Rotation = Mathf.LerpAngle(_cardVisual.Rotation, Rotation, fDelta * FollowSpeed);
         }
 

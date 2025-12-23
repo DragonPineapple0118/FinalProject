@@ -98,7 +98,7 @@ RetryButton = NodePath("GameOverPanel/ReplayButton")
 BonusLabel = NodePath("BonusLable")
 
 [node name="ColorRect" type="ColorRect" parent="."]
-z_index = -1
+z_index = -101
 layout_mode = 0
 offset_right = 1155.0
 offset_bottom = 650.0

@@ -20,7 +20,7 @@ font_size = 30
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_8ekg7"]
 
-[node name="Card" type="Button" node_paths=PackedStringArray("CardFace", "CardComp", "RankLable", "RankLable2", "SuitImage", "CardBack")]
+[node name="Card" type="Button" node_paths=PackedStringArray("CardFace", "CardComp", "RankLable", "RankLable2", "SuitImage", "CardBack", "Shadow")]
 self_modulate = Color(0, 0, 0, 0)
 z_index = 1
 offset_right = 140.0
@@ -34,6 +34,7 @@ RankLable = NodePath("CardComp/SubViewport/CardVisual/Rank")
 RankLable2 = NodePath("CardComp/SubViewport/CardVisual/Rank2")
 SuitImage = NodePath("CardComp/SubViewport/CardVisual/Suit")
 CardBack = NodePath("CardComp/SubViewport/CardVisual/CardBack")
+Shadow = NodePath("Shadow")
 CardSize = Vector2(140, 200)
 
 [node name="CardComp" type="SubViewportContainer" parent="."]
@@ -97,24 +98,23 @@ stretch_mode = 5
 
 [node name="CardBack" type="TextureRect" parent="CardComp/SubViewport/CardVisual"]
 visible = false
+z_index = 1
 layout_mode = 1
-offset_left = -6.0
-offset_top = -9.0
-offset_right = 209.0
-offset_bottom = 276.0
+offset_right = 140.0
+offset_bottom = 200.0
 texture = ExtResource("4_3ujke")
 expand_mode = 1
 stretch_mode = 4
 
 [node name="Shadow" type="TextureRect" parent="."]
-visible = false
 modulate = Color(0, 0, 0, 0.29411766)
+z_index = -100
 material = SubResource("ShaderMaterial_8ekg7")
 layout_mode = 0
-offset_left = 4.0
-offset_top = 3.0
-offset_right = 143.0
-offset_bottom = 197.31633
+offset_left = 7.0
+offset_top = 5.0
+offset_right = 146.0
+offset_bottom = 199.31633
 mouse_filter = 2
 texture = ExtResource("1_hael8")
 expand_mode = 1

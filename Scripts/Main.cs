@@ -33,7 +33,8 @@ public partial class Main : Control
     [Export] public Button RetryButton;
     [Export] public Label BonusLabel;
 
-    private List<(Suit,Rank)> _deck = new List<(Suit,Rank)>();
+    private List<(Suit _cardSuit,Rank _cardRank)> _deck = new List<(Suit,Rank)>();
+    private List<Card> _playerHand = new List<Card>();
     private List<MagicCard> _magicCard = new List<MagicCard>();
     private Dictionary<HandType, int> _handBonuses = new Dictionary<HandType,int>();
     private Dictionary<Suit, SuitChange> _activeSuitChanges = new Dictionary<Suit, SuitChange>();
