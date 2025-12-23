@@ -53,7 +53,7 @@ public partial class Main : Control
     private bool _shopOpen = false;
     private bool _sortByRank = true;
     
-    // Called when the node enters the scene tree for the first time.
+   
     public override void _Ready()
     {
         GD.Print("Ready");
@@ -62,11 +62,10 @@ public partial class Main : Control
         CloseShopButton.Pressed += CloseShopPressed;
         SortToggleButton.Pressed += SortSwitch;
         
-        // Connect Fresh Hand button if it exists
         if (DiscardRedrawButton != null)
         {
             DiscardRedrawButton.Pressed += DiscardRedrawPressed;
-            DiscardRedrawButton.Visible = false; // Initially hidden
+            DiscardRedrawButton.Visible = false;
         }
         
         RetryButton.Pressed += Retry;
@@ -74,7 +73,6 @@ public partial class Main : Control
         NewStage();
     }
 
-    // Called every frame. 'delta' is the elapsed time since the previous frame.
     public override void _Process(double delta)
     {
     }
@@ -124,7 +122,7 @@ public partial class Main : Control
             HandContainer.AddChild(NewCard);
             NewCard.SetData(data._cardSuit,data._cardRank);
             NewCard.GlobalPosition = new Vector2(1200,700);
-            
+            //問AI要怎麼讓新生成出來的卡片也吃到可以改suit的東西
             // Apply suit changes to new cards if available
             foreach (var kvp in _activeSuitChanges)
             {
@@ -243,7 +241,7 @@ public partial class Main : Control
             _ => 0
         };
         
-        // Apply magic card hand bonuses
+        //問了AI怎麼把handBonus卡的效果加上去
         if (_handBonuses.ContainsKey(handType))
         {
             _baseChips += _handBonuses[handType];
@@ -337,7 +335,6 @@ public partial class Main : Control
     {
         int baseChips = rank switch
         {
-            Rank.Two => 12,
             Rank.Three => 3,
             Rank.Four => 4,
             Rank.Five => 5,
@@ -350,6 +347,7 @@ public partial class Main : Control
             Rank.Queen => 10,
             Rank.King => 10,
             Rank.Ace => 11,
+            Rank.Two => 12,
             _ => 0
         };
         
@@ -391,7 +389,6 @@ public partial class Main : Control
         foreach(var card in selectedCards)
             card.QueueFree();
         
-        // Draw cards to maintain hand size
         int cardsToDraw = DrawCardCount - (HandContainer.GetChildCount() - DecreasedCardCount);
         DrawCard(cardsToDraw);
         
@@ -489,7 +486,7 @@ public partial class Main : Control
         }
     }
     
-    private void CreateShopItem(MagicCard magicCard)
+    private void CreateShopItem(MagicCard magicCard)//問AI怎麼生的商品訊息
     {
         var itemContainer = new VBoxContainer();
         itemContainer.CustomMinimumSize = new Vector2(280, 120);
@@ -558,9 +555,9 @@ public partial class Main : Control
         _handsLeft = 4;
         _discardLeft = 3;
         _money = 4;
-        DrawCardCount = 7; // Reset to original draw count
-        _extraHandsBonus = 0; // Reset extra hands bonus
-        _extraDiscardsBonus = 0; // Reset extra discards bonus
+        DrawCardCount = 7; 
+        _extraHandsBonus = 0; 
+        _extraDiscardsBonus = 0; 
         _magicCard.Clear();
         _handBonuses.Clear();
         _activeSuitChanges.Clear();
@@ -571,7 +568,6 @@ public partial class Main : Control
         DiscardButton.Disabled = false;
         SortToggleButton.Disabled = false;
         
-        // Hide Fresh Hand button
         if (DiscardRedrawButton != null)
         {
             DiscardRedrawButton.Visible = false;
@@ -580,7 +576,7 @@ public partial class Main : Control
         NewStage();
     }
     
-    private void SortSwitch()
+    private void SortSwitch()//沒用 沒有做切換成用Suit排序的東西
     {
         _sortByRank=!_sortByRank;
         SortToggleButton.Text = _sortByRank ? "Sort : Rank" : "Sort : Suit";
@@ -638,19 +634,17 @@ public partial class Main : Control
     {
         if (_discardRedraws.Count == 0) return;
         
-        // Use one discard/redraw
         var usedCard = _discardRedraws[0];
         _discardRedraws.RemoveAt(0);
         _magicCard.Remove(usedCard);
         
-        // Discard all cards and draw new hand
         ClearHand();
         DrawCard(DrawCardCount);
         
-        // Disable button if no more uses
         if (_discardRedraws.Count == 0 && DiscardRedrawButton != null)
         {
             DiscardRedrawButton.Disabled = true;
+            DiscardRedrawButton.Visible = false;
             DiscardRedrawButton.Text = "Fresh Hand (Used)";
         }
         
@@ -676,7 +670,6 @@ public partial class Main : Control
     {
         GD.Print($"Card suit changed from {oldSuit} to {newSuit}");
         
-        // Find and remove the used magic card
         if (_activeSuitChanges.ContainsKey(newSuit))
         {
             var usedMagicCard = _activeSuitChanges[newSuit];
@@ -685,7 +678,6 @@ public partial class Main : Control
             
             GD.Print($"Suit change magic card for {newSuit} has been used and removed");
             
-            // Disable suit change on all remaining cards for this suit
             foreach (Node child in HandContainer.GetChildren())
             {
                 if (child is Card card)
@@ -701,13 +693,11 @@ public partial class Main : Control
     
     private void UpdateMagicCardDisplay()
     {
-        // Clear existing magic card display
         foreach (Node child in JokerContainer.GetChildren())
             child.QueueFree();
             
         GD.Print($"Updating magic card display. Total cards: {_magicCard.Count}");
         
-        // Display owned magic cards as simple text
         foreach (var magicCard in _magicCard)
         {
             var cardLabel = new Label();

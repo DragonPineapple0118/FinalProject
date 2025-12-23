@@ -1,4 +1,4 @@
-namespace CardData; // 建議加上 namespace 避免衝突
+namespace CardData; 
 
 public enum Suit 
 { 

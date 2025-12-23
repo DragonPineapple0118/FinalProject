@@ -40,44 +40,41 @@ public partial class Card : Button
 	public override void _Ready()
 	{
 		_cardVisual = CardComp;	
-		CardComp.GlobalPosition = new Vector2(1200,700);
-		_basePosition = _cardVisual.GlobalPosition; // 記錄初始位置
+		_cardVisual.GlobalPosition = new Vector2(1200,700);
+		_basePosition = _cardVisual.GlobalPosition;
 		_cardVisual.TopLevel = true;
-		//_cardVisual.MouseFilter = Control.MouseFilterEnum.Stop;
 		_cardVisual.GuiInput += OnVisualGuiInput;
 		CardComp.MouseEntered += MouseHover;
 		CardComp.MouseExited += MouseExite;
 		var originalMat = _cardVisual.Material as ShaderMaterial;
 
-    	// 為了安全起見，檢查一下是不是真的有抓到材質
-    	if (originalMat != null)
-    	{
-        // 2. 使用 Duplicate() 創造一份全新的副本
-        // 這會讓 _cardMaterial 變成一個獨立的記憶體實體
-        	_cardMaterial = (ShaderMaterial)originalMat.Duplicate();
-
-        // 3. 【最重要的一步】把這份「新副本」塞回去給 _cardVisual
-        // 如果漏了這行，雖然你複製了材質，但卡片顯示時還是會用舊的那份共用材質
-        	_cardVisual.Material = _cardMaterial;
-    	}
+		//問了AI要怎麼把shader獨立出來
+			// 為了安全起見，檢查一下是不是真的有抓到材質
+			if (originalMat != null)
+			{
+			// 2. 使用 Duplicate() 創造一份全新的副本
+			// 這會讓 _cardMaterial 變成一個獨立的記憶體實體
+				_cardMaterial = (ShaderMaterial)originalMat.Duplicate();
+			// 3. 【最重要的一步】把這份「新副本」塞回去給 _cardVisual
+			// 如果漏了這行，雖然你複製了材質，但卡片顯示時還是會用舊的那份共用材質
+				_cardVisual.Material = _cardMaterial;
+			}
 	}
 
 	public override void _Process(double delta)
 	{
 		float fDelta = (float)delta;
 		
-		// 更新基礎位置（跟隨Button的位置）
 		_basePosition = GlobalPosition;
+		//原本寫的檢測滑鼠是不是在卡片上的方法有bug 問AI有沒有別的方法
+			// 使用更精確的滑鼠檢測 - 檢查滑鼠是否在CardVisual範圍內
+			bool mouseInCard = false;
+			if (_cardVisual != null)
+			{
+				Rect2 cardRect = new Rect2(_cardVisual.GlobalPosition, _cardVisual.Size);
+				mouseInCard = cardRect.HasPoint(GetGlobalMousePosition());
+			}
 		
-		// 使用更精確的滑鼠檢測 - 檢查滑鼠是否在CardVisual範圍內
-		bool mouseInCard = false;
-		if (_cardVisual != null)
-		{
-			Rect2 cardRect = new Rect2(_cardVisual.GlobalPosition, _cardVisual.Size);
-			mouseInCard = cardRect.HasPoint(GetGlobalMousePosition());
-		}
-		
-		// 計算目標偏移量
 		Vector2 targetOffset = Vector2.Zero;
 		Vector2 shadowTargetOffset = new Vector2(10,10);
 		if (IsSelected)
@@ -85,34 +82,27 @@ public partial class Card : Button
 			targetOffset += new Vector2(0, -60);
 			shadowTargetOffset = new Vector2(10,-20);
 		}
-		
-		// 改進的hover檢測邏輯：
-		// 1. 如果沒有按住滑鼠，使用正常的hover狀態
-		// 2. 如果按住滑鼠，直接檢查滑鼠是否在卡片上
+		//同上
+			// 改進的hover檢測邏輯：
+			// 1. 如果沒有按住滑鼠，使用正常的hover狀態
+			// 2. 如果按住滑鼠，直接檢查滑鼠是否在卡片上
 		bool shouldHover = _mousePressed ? mouseInCard : _hovering;
 		if (shouldHover)
 		{
 			targetOffset += new Vector2(0, -30);
 		}
-		
-		// 計算最終目標位置
+
 		Vector2 finalTargetPos = _basePosition + targetOffset;
-		
-        // 位置跟隨邏輯 - 平滑移動到目標位置
         if(_cardVisual != null){
             _cardVisual.GlobalPosition = _cardVisual.GlobalPosition.Lerp(finalTargetPos, fDelta * FollowSpeed);
             Shadow.GlobalPosition = Shadow.GlobalPosition.Lerp(_basePosition+shadowTargetOffset, fDelta * FollowSpeed);
-            _cardVisual.Rotation = Mathf.LerpAngle(_cardVisual.Rotation, Rotation, fDelta * FollowSpeed);
         }
-
-        // 傾斜角度的平滑運算
+		//卡片傾斜效果是yt上學的:)
         if (_cardMaterial != null)
         {
-            // 利用 Lerp 讓 目前角度 慢慢接近 目標角度
             _currentRotX = Mathf.Lerp(_currentRotX, _targetRotX, fDelta * FollowSpeed);
             _currentRotY = Mathf.Lerp(_currentRotY, _targetRotY, fDelta * FollowSpeed);
 
-            // 將計算完的平滑角度設定給 Shader
             _cardMaterial.SetShaderParameter("x_rot", _currentRotX);
             _cardMaterial.SetShaderParameter("y_rot", _currentRotY);
         }
@@ -123,7 +113,7 @@ public partial class Card : Button
 		{
 			HandleTiltEffect(_cardVisual.GetLocalMousePosition());
 		}
-		if(@event is InputEventMouseButton mouseEvent)
+		if(@event is InputEventMouseButton mouseEvent) //同上點擊問題請AI改的 防止selected之後hover消失
 		{
 			if(mouseEvent.ButtonIndex == MouseButton.Left)
 			{
@@ -147,7 +137,6 @@ public partial class Card : Button
 					}
 				}
 			}
-			// 添加右鍵檢測來進行花色轉換
 			else if(mouseEvent.ButtonIndex == MouseButton.Right && mouseEvent.Pressed && CanChangeSuit)
 			{
 				ChangeSuit();
@@ -158,7 +147,7 @@ public partial class Card : Button
 	{
 		_rank = r;
 		_suit = s;
-		string path = $"res://CardFace/{s.ToString().ToLower()}.png";
+		string path = $"res://CardFace/{s.ToString().ToLower()}.png";//問了AI怎麼改外觀跟顏色
 		Color color = (s==Suit.Hearts||s==Suit.Diamonds)?Colors.Red:Colors.Black;
 		if (RankLable != null)
 		{
@@ -172,7 +161,7 @@ public partial class Card : Button
 			SuitImage.Texture = GD.Load<Texture2D>(path);
 			SuitImage.Modulate = color;
 		}
-		if(CardBack != null)
+		if(CardBack != null)//保留沒有用到背面
 		{
 			CardBack.Visible= false;
 		}
@@ -200,20 +189,12 @@ public partial class Card : Button
 		_hovering = false;
 		this.ZIndex=1;
 		ResetTilt();
-		
-		// 只有在沒有按住滑鼠的情況下才完全離開
-		// 如果按住滑鼠，讓_Process方法中的mouseInCard檢測來處理
 	}
 	private void HandleTiltEffect(Vector2 mousePos)
     {
-		// 這裡不再直接設定 Shader，而是只更新 "目標數值"
-		//int YOffset=0;
-		//if(_hovering)YOffset+=30;
-		//if(IsSelected)YOffset+=60;
+		//從yt學過來的:)
         float lerpValX = Mathf.Remap(mousePos.X, 0, CardSize.X, 0, 1);
         float lerpValY = Mathf.Remap(mousePos.Y, 0, CardSize.Y, 0, 1);
-
-        // 更新全域變數 _targetRot
         _targetRotY = Mathf.Lerp(-AngleYMax, AngleYMax, lerpValX);
         _targetRotX = Mathf.Lerp(AngleXMax, -AngleXMax, lerpValY);
     }
@@ -246,8 +227,6 @@ public partial class Card : Button
 		CanChangeSuit = false;
 		SetData(_suit,_rank);
 		GD.Print($"Suit changed from {oldSuit} to {_suit}");
-		
-		// Notify Main that suit was changed
 		OnSuitChanged?.Invoke(oldSuit, _suit);
 	}
 	

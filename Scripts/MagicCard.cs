@@ -13,7 +13,7 @@ public class HandScoreUpgrade : MagicCard
     public HandType TargetHandType;
     public int BonusChips;
 
-    public HandScoreUpgrade(HandType handType, int bonus)
+    public HandScoreUpgrade(HandType handType, int bonus)//問AI要怎麼新增魔法卡比較好所以用的建構子寫法
     {
         TargetHandType = handType;
         BonusChips = bonus;
