@@ -12,7 +12,7 @@ public partial class Card : Button
     private float _targetRotY = 0f;
     private float _currentRotX = 0f;
     private float _currentRotY = 0f;
-    private Vector2 _basePosition; // 卡片的基礎位置
+    private Vector2 _basePosition; 
     [Export] public float SmoothSpeed = 10.0f;
 	// -----------------------------------------
 	[Export] public float AngleXMax = 15.0f; 
@@ -32,7 +32,6 @@ public partial class Card : Button
 	private Suit ChangeSuitTo;
 	public bool IsSelected = false;
 	private Vector2 _originalPosition;
-    private float _jumpHeight = 20f;
 	private bool _hovering = false;
 	private bool _mousePressed = false; // 追蹤滑鼠是否按住
 	public event Action OnSelectedChanged;
@@ -40,12 +39,11 @@ public partial class Card : Button
 
 	public override void _Ready()
 	{
-		GD.Print("Ready");
 		_cardVisual = CardComp;	
-		_cardVisual.GlobalPosition = new Vector2(1200,700);
+		CardComp.GlobalPosition = new Vector2(1200,700);
 		_basePosition = _cardVisual.GlobalPosition; // 記錄初始位置
 		_cardVisual.TopLevel = true;
-		_cardVisual.MouseFilter = Control.MouseFilterEnum.Stop;
+		//_cardVisual.MouseFilter = Control.MouseFilterEnum.Stop;
 		_cardVisual.GuiInput += OnVisualGuiInput;
 		CardComp.MouseEntered += MouseHover;
 		CardComp.MouseExited += MouseExite;

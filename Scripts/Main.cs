@@ -33,7 +33,6 @@ public partial class Main : Control
     [Export] public Button RetryButton;
     [Export] public Label BonusLabel;
 
-    private List<(Suit _cardSuit,Rank _cardRank)> _deck = new List<(Suit,Rank)>();
     private List<Card> _playerHand = new List<Card>();
     private List<MagicCard> _magicCard = new List<MagicCard>();
     private Dictionary<HandType, int> _handBonuses = new Dictionary<HandType,int>();
@@ -80,6 +79,7 @@ public partial class Main : Control
     {
     }
     
+    private List<(Suit _cardSuit,Rank _cardRank)> _deck = new List<(Suit,Rank)>();
     private void Initialize()
     {
         GD.Print("Initializing");
@@ -92,6 +92,123 @@ public partial class Main : Control
             }
         }
         GD.Print($"Deck initialized with {_deck.Count} cards");
+    }
+    private void ShuffleDeck()
+    {
+        Random random = new Random();
+        int n = _deck.Count;
+        while (n > 1)
+        {
+            n--;
+            int k = random.Next(n + 1);
+            var value = _deck[k];
+            _deck[k] = _deck[n];
+            _deck[n] = value;
+        }
+    }
+    
+    private void ClearHand()
+    {
+        foreach (Node child in HandContainer.GetChildren())
+            child.QueueFree();
+        _selectCount = 0;
+    }
+    
+    private void DrawCard(int n)
+    {
+        for(int i = 0; i < n; i++)
+        {
+            var data = _deck[0];
+            _deck.RemoveAt(0);
+            Card NewCard = CardObject.Instantiate<Card>();
+            HandContainer.AddChild(NewCard);
+            NewCard.SetData(data._cardSuit,data._cardRank);
+            NewCard.GlobalPosition = new Vector2(1200,700);
+            
+            // Apply suit changes to new cards if available
+            foreach (var kvp in _activeSuitChanges)
+            {
+                Suit targetSuit = kvp.Key;
+                if (NewCard._suit != targetSuit)
+                {
+                    NewCard.EnableSuitChange(targetSuit);
+                }
+            }
+            // Add event for suit change notification
+            NewCard.OnSuitChanged += (oldSuit, newSuit) =>
+            {
+                OnCardSuitChanged(oldSuit, newSuit);
+            };
+            
+            NewCard.OnSelectedChanged += ()=>
+            {
+                if(GetSelectedCards().Count > 5)
+                    NewCard.SetSelected();
+                UpdateUI();
+            };
+            
+
+        }
+    }
+    
+    private void Sort()
+    {
+        var cards =new List<Card>();
+        foreach (Node child in HandContainer.GetChildren())
+        {
+            var card = child as Card;
+            cards.Add(card);
+        }
+        if(cards.Count==0)return;
+        var sortedCards = new List<Card>(cards);
+        if (_sortByRank)
+        {
+            sortedCards.Sort((a,b) => b._rank.CompareTo(a._rank));
+        }
+        DoSortCards(sortedCards);
+    }
+    
+    private void DoSortCards(List<Card> sortedCards)
+    {
+        foreach (var card in sortedCards)
+        {
+            HandContainer.RemoveChild(card);
+        }
+        foreach(var card in sortedCards)
+        {
+            HandContainer.AddChild(card);
+        }
+    }
+    
+    private void UpdateUI()
+    {
+        Sort();
+        List<Card> selectedCards = GetSelectedCards();
+        HandType handType = HandEvaluator.Evaluate(selectedCards);
+        CalculateScore(selectedCards,handType);
+        string handBonusText = "";
+        if (_handBonuses.ContainsKey(handType) && _handBonuses[handType] > 0)
+        {
+            handBonusText = $" (+{_handBonuses[handType]} bonus)";
+        }
+        
+        TypeLabel.Text = $"{handType}";
+        ScoreLabel.Text = $"{_currentScore}/{_targetScore}";
+        ChipsLabel.Text = $"{_baseChips}";
+        MultLabel.Text = $"{_multiplier}";
+        StageLabel.Text = $"Stage{_currentStage}";
+        HandLabel.Text = $"{_handsLeft}";
+        DiscardLabel.Text = $"{_discardLeft}";
+        BonusLabel.Text = $"{handBonusText}";
+        MoneyLabel.Text = $"{_money}";
+        
+        // Update discard/redraw button
+        if (DiscardRedrawButton != null)
+        {
+            DiscardRedrawButton.Visible = _discardRedraws.Count > 0;
+            DiscardRedrawButton.Text = _discardRedraws.Count > 0 ? 
+            "Fresh Hand" : "Fresh Hand (Used)";
+        }
     }
     
     private void NewStage()
@@ -438,7 +555,7 @@ public partial class Main : Control
     {
         _currentStage = 1;
         _currentScore = 0;
-        _handsLeft = 5;
+        _handsLeft = 4;
         _discardLeft = 3;
         _money = 4;
         DrawCardCount = 7; // Reset to original draw count
@@ -581,122 +698,6 @@ public partial class Main : Control
         }
     }
     
-    private void ShuffleDeck()
-    {
-        Random random = new Random();
-        int n = _deck.Count;
-        while (n > 1)
-        {
-            n--;
-            int k = random.Next(n + 1);
-            var value = _deck[k];
-            _deck[k] = _deck[n];
-            _deck[n] = value;
-        }
-    }
-    
-    private void ClearHand()
-    {
-        foreach (Node child in HandContainer.GetChildren())
-            child.QueueFree();
-        _selectCount = 0;
-    }
-    
-    private void DrawCard(int n)
-    {
-        for(int i = 0; i < n; i++)
-        {
-            var data = _deck[0];
-            _deck.RemoveAt(0);
-            Card NewCard = CardObject.Instantiate<Card>();
-            HandContainer.AddChild(NewCard);
-            NewCard.SetData(data.Item1,data.Item2);
-            NewCard.GlobalPosition = new Vector2(1200,700);
-            
-            // Apply suit changes to new cards if available
-            foreach (var kvp in _activeSuitChanges)
-            {
-                Suit targetSuit = kvp.Key;
-                if (NewCard._suit != targetSuit)
-                {
-                    NewCard.EnableSuitChange(targetSuit);
-                }
-            }
-            
-            NewCard.OnSelectedChanged += ()=>
-            {
-                if(GetSelectedCards().Count > 5)
-                    NewCard.SetSelected();
-                UpdateUI();
-            };
-            
-            // Add event for suit change notification
-            NewCard.OnSuitChanged += (oldSuit, newSuit) =>
-            {
-                OnCardSuitChanged(oldSuit, newSuit);
-            };
-        }
-    }
-    
-    private void Sort()
-    {
-        var cards =new List<Card>();
-        foreach (Node child in HandContainer.GetChildren())
-        {
-            var card = child as Card;
-            cards.Add(card);
-        }
-        if(cards.Count==0)return;
-        var sortedCards = new List<Card>(cards);
-        if (_sortByRank)
-        {
-            sortedCards.Sort((a,b) => b._rank.CompareTo(a._rank));
-        }
-        DoSortCards(sortedCards);
-    }
-    
-    private void DoSortCards(List<Card> sortedCards)
-    {
-        foreach (var card in sortedCards)
-        {
-            HandContainer.RemoveChild(card);
-        }
-        foreach(var card in sortedCards)
-        {
-            HandContainer.AddChild(card);
-        }
-    }
-    
-    private void UpdateUI()
-    {
-        Sort();
-        List<Card> selectedCards = GetSelectedCards();
-        HandType handType = HandEvaluator.Evaluate(selectedCards);
-        CalculateScore(selectedCards,handType);
-        
-        string handBonusText = "";
-        if (_handBonuses.ContainsKey(handType) && _handBonuses[handType] > 0)
-        {
-            handBonusText = $" (+{_handBonuses[handType]} bonus)";
-        }
-        
-        TypeLabel.Text = $"{handType}";
-        ScoreLabel.Text = $"{_currentScore}/{_targetScore}";
-        ChipsLabel.Text = $"{_baseChips}";
-        MultLabel.Text = $"{_multiplier}";
-        StageLabel.Text = $"Stage{_currentStage}";
-        HandLabel.Text = $"{_handsLeft}";
-        DiscardLabel.Text = $"{_discardLeft}";
-        BonusLabel.Text = $"{handBonusText}";
-        MoneyLabel.Text = $"{_money}";
-        
-        // Update discard/redraw button
-        if (DiscardRedrawButton != null)
-        {
-            DiscardRedrawButton.Visible = _discardRedraws.Count > 0;
-            DiscardRedrawButton.Text = _discardRedraws.Count > 0 ? "Fresh Hand" : "Fresh Hand (Used)";
-        }
-    }
     
     private void UpdateMagicCardDisplay()
     {
